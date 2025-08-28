@@ -152,3 +152,6 @@ build/
 Pods/
 .vscode/
 .vercel
+
+**/.bmad-core
+**/.claude

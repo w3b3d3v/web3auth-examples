@@ -79,7 +79,7 @@ function App() {
         >
           Web3Auth{" "}
         </a>
-        & React Modal Quick Start
+        & React Modal Quick Start by WEB3DEV
       </h1>
 
       {isConnected ? loggedInView : unloggedInView}
@@ -89,7 +89,7 @@ function App() {
 
       <footer className="footer">
         <a
-          href="https://github.com/Web3Auth/web3auth-examples/tree/main/quick-starts/react-quick-start"
+          href="https://github.com/w3b3d3v/web3auth-examples/tree/web3dev-version/quick-starts/react-quick-start"
           target="_blank"
           rel="noopener noreferrer"
         >

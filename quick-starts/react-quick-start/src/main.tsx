@@ -4,8 +4,9 @@ import ReactDOM from "react-dom/client";
 import { Web3AuthProvider } from "@web3auth/modal/react";
 import web3AuthContextConfig from "./web3authContext";
 
-import { WagmiProvider } from "@web3auth/modal/react/wagmi";
+import { WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { wagmiConfig } from "./wagmi-config";
 
 import App from "./App";
 
@@ -14,7 +15,7 @@ const queryClient = new QueryClient();
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <Web3AuthProvider config={web3AuthContextConfig}>
     <QueryClientProvider client={queryClient}>
-      <WagmiProvider>
+      <WagmiProvider config={wagmiConfig}>
         <App />
       </WagmiProvider>
     </QueryClientProvider>
