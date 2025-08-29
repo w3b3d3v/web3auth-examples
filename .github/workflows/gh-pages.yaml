@@ -30,6 +30,8 @@ jobs:
           cache-dependency-path: "quick-starts/react-quick-start/package-lock.json"
 
       - name: Build React Quick Start
+        env:
+          VITE_WEB3AUTH_CLIENT_ID: ${{ secrets.VITE_WEB3AUTH_CLIENT_ID }}
         run: |
           cd quick-starts/react-quick-start
           npm ci
