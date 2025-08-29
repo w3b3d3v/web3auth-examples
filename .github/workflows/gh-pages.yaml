@@ -1,0 +1,61 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [web3dev-version]
+  pull_request:
+    branches: [web3dev-version]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: "quick-starts/react-quick-start/package-lock.json"
+
+      - name: Build React Quick Start
+        run: |
+          cd quick-starts/react-quick-start
+          npm ci
+          npm run build -- --base=/quick-starts/react-quick-start/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Create pages structure
+        run: |
+          mkdir -p _site/quick-starts/react-quick-start
+          cp -r quick-starts/react-quick-start/dist/* _site/quick-starts/react-quick-start/
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "_site"
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/web3dev-version'
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
