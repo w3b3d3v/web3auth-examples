@@ -9,6 +9,8 @@ import { SendTransaction } from "./components/sendTransaction";
 import { Balance } from "./components/getBalance";
 import { SwitchChain } from "./components/switchNetwork";
 import { ExportPrivateKey } from "./components/exportPrivateKey";
+import { ContractData } from "./components/ContractData";
+import { myTokenModuleMyTokenAddress } from "./generated";
 
 function App() {
   const {
@@ -25,6 +27,8 @@ function App() {
   } = useWeb3AuthDisconnect();
   const { userInfo } = useWeb3AuthUser();
   const { address } = useAccount();
+
+  const contractAddress = myTokenModuleMyTokenAddress[420420422];
 
   function uiConsole(...args: any[]): void {
     const el = document.querySelector("#console>p");
@@ -58,6 +62,14 @@ function App() {
       <Balance />
       <SwitchChain />
       <ExportPrivateKey />
+
+      <div className="contract-section">
+        <h3>Contract Interactions</h3>
+        <ContractData
+          contractAddress={contractAddress}
+          userAddresses={address ? [address] : undefined}
+        />
+      </div>
     </div>
   );
 
