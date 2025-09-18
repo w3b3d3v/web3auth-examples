@@ -23,3 +23,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Test and session data
+tests/session-data/
+tests/browser-profile/
+tests/session-state.json
+test-results/
+playwright-report/
+playwright/.cache/
