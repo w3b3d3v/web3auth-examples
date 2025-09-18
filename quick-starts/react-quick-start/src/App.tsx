@@ -8,6 +8,7 @@ import { useAccount } from "wagmi";
 import { SendTransaction } from "./components/sendTransaction";
 import { Balance } from "./components/getBalance";
 import { SwitchChain } from "./components/switchNetwork";
+import { ExportPrivateKey } from "./components/exportPrivateKey";
 
 function App() {
   const {
@@ -56,6 +57,7 @@ function App() {
       <SendTransaction />
       <Balance />
       <SwitchChain />
+      <ExportPrivateKey />
     </div>
   );
 
