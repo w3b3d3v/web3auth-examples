@@ -157,7 +157,8 @@ export function SendTransaction() {
             border: "none",
             borderRadius: "5px",
             cursor: isPending ? "not-allowed" : "pointer",
-          }}>
+          }}
+        >
           {isPending ? "Confirming..." : `Send ${networkInfo.symbol}`}
         </button>
       </form>
@@ -169,7 +170,8 @@ export function SendTransaction() {
             padding: "10px",
             backgroundColor: "#f0f0f0",
             borderRadius: "5px",
-          }}>
+          }}
+        >
           <strong>Transaction Hash:</strong>
           <br />
           <code style={{ fontSize: "12px", wordBreak: "break-all" }}>
@@ -198,7 +200,8 @@ export function SendTransaction() {
             backgroundColor: "#ffe6e6",
             borderRadius: "5px",
             color: "#cc0000",
-          }}>
+          }}
+        >
           <strong>Error:</strong>{" "}
           {(error as BaseError).shortMessage || error.message}
         </div>
