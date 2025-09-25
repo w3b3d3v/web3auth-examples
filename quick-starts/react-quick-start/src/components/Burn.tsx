@@ -1,4 +1,4 @@
-import { myTokenModuleMyTokenAbi } from "../generated";
+import { fakeUsdtModuleFakeUsdtAbi } from "../generated";
 import {
   useWriteContract,
   useAccount,
@@ -6,65 +6,50 @@ import {
   useChainId,
 } from "wagmi";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
-export function Mint(params: {
+export function Burn(params: {
   contractAddress: `0x${string}`;
-  ownerAddress: `0x${string}`;
-  isOwner: boolean;
   decimals: number;
   symbol: string;
+  userBalance: bigint;
 }) {
   const { address: userAddress } = useAccount();
   const publicClient = usePublicClient();
   const chainId = useChainId();
   const [amount, setAmount] = useState(0);
-  const [address, setAddress] = useState<`0x${string}`>(
-    userAddress || "0x932217f9faf715808c1f76eA9EeAb7026806C963"
-  );
-
-  useEffect(() => {
-    if (userAddress) {
-      setAddress(userAddress);
-    }
-  }, [userAddress]);
 
   const { writeContract, status, data, error } = useWriteContract();
+
+  const formatBalance = (balance: bigint): string => {
+    const divisor = 10n ** BigInt(params.decimals);
+    return (Number(balance) / Number(divisor)).toFixed(params.decimals);
+  };
 
   return (
     <div className="border rounded-md my-5 mx-2 p-2 w-fit inline-block">
       <h3 className="px-2 block mb-2 font-bold text-lg">
-        Mint {params.symbol}s
+        Burn {params.symbol}s
       </h3>
-      <div className="text-right my-2">
-        <label htmlFor="address" className="px-2 block mb-2 inline-block">
-          Address
-        </label>
-        <input
-          id="address"
-          value={address}
-          placeholder="0x..."
-          onChange={(e) => setAddress(e.target.value as `0x${string}`)}
-          disabled={status === "pending"}
-          className="
-            border rounded-md padding-1 pl-2 h-10 w-400
-            focus:ring-2 focus:ring-inset focus:ring-indigo-600
-          "
-        />
+
+      <div className="px-2 mb-3 text-sm">
+        Your balance: <span className="font-semibold">{formatBalance(params.userBalance)} {params.symbol}</span>
       </div>
+
       <div className="text-right my-2">
-        <label htmlFor="amount" className="px-2 block mb-2 inline-block">
-          Amount
+        <label htmlFor="burnAmount" className="px-2 block mb-2 inline-block">
+          Amount to Burn
         </label>
         <input
-          id="amount"
+          id="burnAmount"
           type="number"
           placeholder="0"
+          max={formatBalance(params.userBalance)}
           onChange={(e) => setAmount(Number(e.target.value))}
           disabled={status === "pending"}
           className="
             border rounded-md padding-1 pl-2 h-10 w-400
-            focus:ring-2 focus:ring-inset focus:ring-indigo-600
+            focus:ring-2 focus:ring-inset focus:ring-red-600
           "
         />
       </div>
@@ -74,7 +59,14 @@ export function Mint(params: {
           if (!userAddress) return;
           try {
             const value = BigInt(amount) * 10n ** BigInt(params.decimals);
-            // Precompute fee and limits to avoid wallet estimation issues
+
+            // Check if user has enough balance
+            if (value > params.userBalance) {
+              alert("Cannot burn more than your balance!");
+              return;
+            }
+
+            // Precompute gas parameters
             const [gasPrice, nonce, gas] = await Promise.all([
               publicClient?.getGasPrice().catch(() => undefined),
               publicClient
@@ -85,12 +77,11 @@ export function Mint(params: {
                   account: userAddress,
                   to: params.contractAddress,
                   data: await (async () => {
-                    // Encode calldata for the mint(address,uint256)
-                    const selector = "0x40c10f19";
+                    // Encode calldata for burn(uint256)
+                    const selector = "0x42966c68";
                     const pad = (s: string) =>
                       s.replace(/^0x/, "").padStart(64, "0");
-                    const calldata =
-                      selector + pad(address) + pad(value.toString(16));
+                    const calldata = selector + pad(value.toString(16));
                     return calldata as `0x${string}`;
                   })(),
                 })
@@ -100,9 +91,9 @@ export function Mint(params: {
             writeContract({
               chainId,
               address: params.contractAddress,
-              abi: myTokenModuleMyTokenAbi,
-              functionName: "mint",
-              args: [address, value],
+              abi: fakeUsdtModuleFakeUsdtAbi,
+              functionName: "burn",
+              args: [value],
               // Hint wagmi/viem for legacy by setting gasPrice
               ...(gasPrice ? { gasPrice, type: "legacy" as const } : {}),
               ...(gas ? { gas } : {}),
@@ -113,19 +104,20 @@ export function Mint(params: {
             console.error(e);
           }
         }}
-        disabled={status === "pending" || amount <= 0}
+        disabled={status === "pending" || amount <= 0 || params.userBalance === 0n}
         className="
-        my-0 mx-3 h-10 py-0
-        focus:ring-2 focus:ring-inset focus:ring-indigo-600
+        my-0 mx-3 h-10 py-0 bg-red-500 text-white rounded-md px-4
+        focus:ring-2 focus:ring-inset focus:ring-red-600
+        disabled:bg-gray-300 disabled:cursor-not-allowed
       ">
-        Mint{" "}
+        Burn{" "}
         {status === "pending"
           ? "⏳"
           : status === "success"
           ? "✅"
           : status === "error"
           ? "❌"
-          : ""}
+          : "🔥"}
       </button>
 
       {status === "error" && error && (
@@ -148,12 +140,12 @@ export function Mint(params: {
             marginTop: "8px",
             padding: "8px",
           }}>
-          Transaction successful! Hash: {data}
+          Burn successful! Hash: {data}
         </div>
       )}
 
-      <div style={{ color: "blue", fontSize: "12px", marginTop: "6px" }}>
-        💡 This is a test token - anyone can mint for free!
+      <div style={{ color: "gray", fontSize: "12px", marginTop: "6px" }}>
+        🔥 You can only burn your own tokens
       </div>
     </div>
   );

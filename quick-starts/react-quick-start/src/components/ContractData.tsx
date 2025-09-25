@@ -1,6 +1,7 @@
 import { myTokenModuleMyTokenConfig } from "../generated";
 import { useReadContracts } from "wagmi";
 import { Mint } from "./Mint";
+import { Burn } from "./Burn";
 import type { Abi } from "viem";
 
 export function ContractData(params: {
@@ -119,20 +120,28 @@ export function ContractData(params: {
         </div>
       )}
 
-      <Mint
-        contractAddress={params.contractAddress}
-        ownerAddress={owner}
-        isOwner={Boolean(isOwner)}
-        decimals={decimals}
-        symbol={tokenName}
-      />
+      <div className="flex flex-wrap gap-4">
+        <Mint
+          contractAddress={params.contractAddress}
+          ownerAddress={owner}
+          isOwner={Boolean(isOwner)}
+          decimals={decimals}
+          symbol={tokenName}
+        />
 
-      {!isOwner && (
-        <p style={{ color: "orange", fontSize: "14px", marginTop: "8px" }}>
-          Note: You are not the contract owner. Minting may fail unless you have
-          the MINTER_ROLE.
-        </p>
-      )}
+        {params.userAddresses && params.userAddresses.length > 0 && (
+          <Burn
+            contractAddress={params.contractAddress}
+            decimals={decimals}
+            symbol={tokenName}
+            userBalance={balances[0] || 0n}
+          />
+        )}
+      </div>
+
+      <p style={{ color: "green", fontSize: "14px", marginTop: "8px" }}>
+        ✅ Anyone can mint this test token! No special permissions required.
+      </p>
     </>
   );
 }

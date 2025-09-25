@@ -28,7 +28,10 @@ function App() {
   const { userInfo } = useWeb3AuthUser();
   const { address } = useAccount();
 
-  const contractAddress = myTokenModuleMyTokenAddress[420420422];
+  const contractAddress =
+    myTokenModuleMyTokenAddress[
+      420420422 as keyof typeof myTokenModuleMyTokenAddress
+    ];
 
   function uiConsole(...args: any[]): void {
     const el = document.querySelector("#console>p");
@@ -60,16 +63,29 @@ function App() {
       </div>
       <SendTransaction />
       <Balance />
+
+      {contractAddress && (
+        <div className="contract-section">
+          <h3>FakeUSDT Contract Interactions</h3>
+          <ContractData
+            contractAddress={contractAddress}
+            userAddresses={address ? [address] : undefined}
+          />
+        </div>
+      )}
+
       <SwitchChain />
       <ExportPrivateKey />
 
-      <div className="contract-section">
-        <h3>Contract Interactions</h3>
-        <ContractData
-          contractAddress={contractAddress}
-          userAddresses={address ? [address] : undefined}
-        />
-      </div>
+      {!contractAddress && (
+        <div className="contract-section">
+          <h3>Contract Not Available</h3>
+          <p>
+            Please deploy the FakeUSDT contract and update the address in
+            generated.ts
+          </p>
+        </div>
+      )}
     </div>
   );
 

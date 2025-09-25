@@ -1,11 +1,14 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// MyTokenModule#MyToken
+// FakeUSDTModule#FakeUSDT
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
- *
+ * FakeUSDT - An upgradeable test token with USDT compatibility (6 decimals)
+ * - Anyone can mint tokens
+ * - Users can only burn their own tokens
+ * - Upgradeable with UUPS pattern
  */
-export const myTokenModuleMyTokenAbi = [
+export const fakeUsdtModuleFakeUsdtAbi = [
   {
     inputs: [],
     stateMutability: "nonpayable",
@@ -266,6 +269,12 @@ export const myTokenModuleMyTokenAbi = [
         indexed: true,
         internalType: "address",
         name: "implementation",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "newOwner",
         type: "address",
       },
     ],
@@ -586,16 +595,21 @@ export const myTokenModuleMyTokenAbi = [
 ];
 
 /**
- *
+ * Contract addresses for different networks
+ * Add your deployed contract addresses here
  */
 export const myTokenModuleMyTokenAddress = {
   420420422: "0x3C0A2D569531952dd5832706707cFBf097Ac9BFe",
 } as const;
 
 /**
- *
+ * Complete contract configuration for Wagmi
  */
-export const myTokenModuleMyTokenConfig = {
+export const fakeUsdtModuleFakeUsdtConfig = {
   address: myTokenModuleMyTokenAddress,
-  abi: myTokenModuleMyTokenAbi,
+  abi: fakeUsdtModuleFakeUsdtAbi,
 } as const;
+
+// Legacy exports for backward compatibility
+export const myTokenModuleMyTokenAbi = fakeUsdtModuleFakeUsdtAbi;
+export const myTokenModuleMyTokenConfig = fakeUsdtModuleFakeUsdtConfig;
