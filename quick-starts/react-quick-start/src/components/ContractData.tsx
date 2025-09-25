@@ -1,6 +1,7 @@
-import { myTokenModuleMyTokenAbi } from "../generated";
+import { myTokenModuleMyTokenConfig } from "../generated";
 import { useReadContracts } from "wagmi";
 import { Mint } from "./Mint";
+import type { Abi } from "viem";
 
 export function ContractData(params: {
   contractAddress: `0x${string}`;
@@ -10,14 +11,14 @@ export function ContractData(params: {
 
   const myTokenContract = {
     address: params.contractAddress,
-    abi: myTokenModuleMyTokenAbi,
+    abi: myTokenModuleMyTokenConfig.abi as Abi,
   } as const;
 
   const contractData = useReadContracts({
     contracts: [
       {
         ...myTokenContract,
-        functionName: "minter",
+        functionName: "owner",
       },
       {
         ...myTokenContract,
@@ -33,7 +34,6 @@ export function ContractData(params: {
       },
       ...(params.userAddresses ?? []).map((addr) => ({
         ...myTokenContract,
-        abi: myTokenModuleMyTokenAbi,
         functionName: "balanceOf",
         args: [addr],
       })),
