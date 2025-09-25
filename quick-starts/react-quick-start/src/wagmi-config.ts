@@ -66,11 +66,11 @@ export const westend = {
 } as const satisfies Chain;
 
 export const wagmiConfig = createConfig({
-  chains: [mainnet, passetHub, kusamaAssetHub, westend],
+  chains: [passetHub, mainnet, kusamaAssetHub, westend],
   transports: {
-    [passetHub.id]: http(),
+    [passetHub.id]: http(passetHub.rpcUrls.default.http[0]),
     [mainnet.id]: http(),
-    [kusamaAssetHub.id]: http(),
-    [westend.id]: http(),
+    [kusamaAssetHub.id]: http(kusamaAssetHub.rpcUrls.default.http[0]),
+    [westend.id]: http(westend.rpcUrls.default.http[0]),
   },
 });

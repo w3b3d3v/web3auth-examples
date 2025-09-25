@@ -7,7 +7,7 @@ export function Balance() {
   const chainId = useChainId();
 
   const { data, isLoading, error } = useBalance({ address });
-  console.log("user data: ", data);
+  // console.log("user data: ", data);
 
   // Get decimals from the current chain's native currency
   const getNetworkDecimals = (chainId: number) => {
@@ -23,7 +23,7 @@ export function Balance() {
     }
   };
 
-  const networkDecimals = getNetworkDecimals(chainId);
+  const networkDecimals = data?.decimals ?? getNetworkDecimals(chainId);
 
   return (
     <div>
