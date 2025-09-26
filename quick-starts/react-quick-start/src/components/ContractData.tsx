@@ -94,25 +94,26 @@ export function ContractData(params: {
         <span className="font-bold">{params.contractAddress}</span>
       </p>
       <p>
-        Smart contract owner: <span className="font-bold">{owner}</span>
-        {isOwner && <> (that's you!!)</>}
-      </p>
-      <p>
         Total supply:{" "}
         <span className="font-bold">{formatMoney(totalSupply)}</span>
       </p>
 
       {params.userAddresses && params.userAddresses.length > 0 && (
-        <div className="border rounded-md my-5 p-2 w-full align-top">
-          <h3 className="font-bold text-lg">Balances</h3>
-          <div className="w-full grid grid-cols-2">
+        <div className="border rounded-md my-5 p-4 w-full align-top" style={{
+          backgroundColor: "var(--bg-light)",
+          borderColor: "var(--border-color)",
+          boxShadow: "var(--shadow-sm)"
+        }}>
+          <h3 className="font-bold text-lg mb-4" style={{ color: "var(--text-color)" }}>Balances</h3>
+          <div className="balance-grid">
             {balances
               .map((val, index) => [
-                <div key={index.toString() + "_addr"} className="text-left">
-                  {params.userAddresses![index]}
+                <div key={index.toString() + "_addr"} className="balance-address">
+                  <span className="balance-label">Address:</span>
+                  <span className="balance-value">{params.userAddresses![index]}</span>
                 </div>,
-                <div key={index.toString() + "_value"} className="text-right">
-                  {formatMoney(val)}
+                <div key={index.toString() + "_value"} className="balance-amount">
+                  <span className="balance-amount-value">{formatMoney(val)}</span>
                 </div>,
               ])
               .flat()}
@@ -120,7 +121,7 @@ export function ContractData(params: {
         </div>
       )}
 
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-6" style={{ marginTop: "20px", marginBottom: "16px" }}>
         <Mint
           contractAddress={params.contractAddress}
           ownerAddress={owner}
@@ -139,9 +140,20 @@ export function ContractData(params: {
         )}
       </div>
 
-      <p style={{ color: "green", fontSize: "14px", marginTop: "8px" }}>
+      <div style={{
+        color: "var(--text-muted)",
+        fontSize: "13px",
+        marginTop: "16px",
+        padding: "10px 14px",
+        backgroundColor: "rgba(34, 197, 94, 0.1)",
+        borderRadius: "8px",
+        border: "1px solid rgba(34, 197, 94, 0.2)",
+        fontWeight: "400",
+        lineHeight: "1.5",
+        textAlign: "center"
+      }}>
         ✅ Anyone can mint this test token! No special permissions required.
-      </p>
+      </div>
     </>
   );
 }

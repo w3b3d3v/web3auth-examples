@@ -5,8 +5,9 @@ import {
   usePublicClient,
   useChainId,
 } from "wagmi";
+import { passetHub, kusamaAssetHub, westend } from "../wagmi-config";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export function Burn(params: {
   contractAddress: `0x${string}`;
@@ -18,8 +19,57 @@ export function Burn(params: {
   const publicClient = usePublicClient();
   const chainId = useChainId();
   const [amount, setAmount] = useState(0);
+  const [showHashButton, setShowHashButton] = useState(false);
 
   const { writeContract, status, data, error } = useWriteContract();
+
+  // Handle delay for showing transaction hash button
+  useEffect(() => {
+    if (status === "success" && data) {
+      setShowHashButton(false);
+      const timer = setTimeout(() => {
+        setShowHashButton(true);
+      }, 5000); // 1 second delay
+
+      return () => clearTimeout(timer);
+    } else {
+      setShowHashButton(false);
+    }
+  }, [status, data]);
+
+  // Get network-specific information including block explorer
+  const getNetworkInfo = (chainId: number) => {
+    switch (chainId) {
+      case passetHub.id:
+        return {
+          explorer: "https://blockscout-passet-hub.parity-testnet.parity.io",
+        };
+      case kusamaAssetHub.id:
+        return {
+          explorer:
+            "https://blockscout-kusama-asset-hub.parity-chains-scw.parity.io",
+        };
+      case westend.id:
+        return {
+          explorer: "https://blockscout-asset-hub.parity-chains-scw.parity.io",
+        };
+      case 1: // Ethereum mainnet
+        return {
+          explorer: "https://etherscan.io",
+        };
+      default:
+        return {
+          explorer: "",
+        };
+    }
+  };
+
+  const networkInfo = getNetworkInfo(chainId);
+
+  // Format transaction hash for display (first 5 chars only)
+  const formatTxHash = (hash: string) => {
+    return hash.slice(0, 5);
+  };
 
   const formatBalance = (balance: bigint): string => {
     const divisor = 10n ** BigInt(params.decimals);
@@ -27,13 +77,38 @@ export function Burn(params: {
   };
 
   return (
-    <div className="border rounded-md my-5 mx-2 p-2 w-fit inline-block">
-      <h3 className="px-2 block mb-2 font-bold text-lg">
+    <div
+      className="border rounded-md my-5 mx-2 p-4 w-fit inline-block"
+      style={{
+        backgroundColor: "var(--bg-light)",
+        borderColor: "var(--border-color)",
+        boxShadow: "var(--shadow-sm)",
+        minWidth: "320px",
+      }}
+    >
+      <h3
+        className="px-2 block mb-4 font-bold text-lg"
+        style={{ color: "var(--text-color)" }}
+      >
         Burn {params.symbol}s
       </h3>
 
-      <div className="px-2 mb-3 text-sm">
-        Your balance: <span className="font-semibold">{formatBalance(params.userBalance)} {params.symbol}</span>
+      <div
+        className="px-2 mb-4 text-sm"
+        style={{
+          padding: "8px 12px",
+          backgroundColor: "var(--bg-color)",
+          borderRadius: "6px",
+          border: "1px solid var(--border-color)",
+        }}
+      >
+        Your balance:{" "}
+        <span
+          className="font-semibold"
+          style={{ color: "var(--primary-color)" }}
+        >
+          {formatBalance(params.userBalance)} {params.symbol}
+        </span>
       </div>
 
       <div className="text-right my-2">
@@ -104,12 +179,32 @@ export function Burn(params: {
             console.error(e);
           }
         }}
-        disabled={status === "pending" || amount <= 0 || params.userBalance === 0n}
-        className="
-        my-0 mx-3 h-10 py-0 bg-red-500 text-white rounded-md px-4
-        focus:ring-2 focus:ring-inset focus:ring-red-600
-        disabled:bg-gray-300 disabled:cursor-not-allowed
-      ">
+        disabled={
+          status === "pending" || amount <= 0 || params.userBalance === 0n
+        }
+        style={{
+          margin: "0 12px",
+          height: "40px",
+          padding: "0 16px",
+          backgroundColor:
+            status === "pending" || amount <= 0 || params.userBalance === 0n
+              ? "#ccc"
+              : "#ff6b35",
+          color: "white",
+          border: "none",
+          borderRadius: "6px",
+          cursor:
+            status === "pending" || amount <= 0 || params.userBalance === 0n
+              ? "not-allowed"
+              : "pointer",
+          fontSize: "14px",
+          fontWeight: "500",
+          opacity:
+            status === "pending" || amount <= 0 || params.userBalance === 0n
+              ? 0.6
+              : 1,
+        }}
+      >
         Burn{" "}
         {status === "pending"
           ? "⏳"
@@ -127,7 +222,8 @@ export function Burn(params: {
             fontSize: "14px",
             marginTop: "8px",
             padding: "8px",
-          }}>
+          }}
+        >
           Error: {error.message}
         </div>
       )}
@@ -135,16 +231,83 @@ export function Burn(params: {
       {status === "success" && data && (
         <div
           style={{
-            color: "green",
-            fontSize: "14px",
-            marginTop: "8px",
-            padding: "8px",
-          }}>
-          Burn successful! Hash: {data}
+            marginTop: "12px",
+            padding: "10px",
+            backgroundColor: "#fff5f0",
+            borderRadius: "8px",
+            border: "1px solid #ffb394",
+          }}
+        >
+          <div
+            style={{
+              color: "green",
+              fontSize: "14px",
+              marginBottom: "8px",
+              fontWeight: "500",
+            }}
+          >
+            ✅ Burn successful!
+          </div>
+          {showHashButton ? (
+            networkInfo.explorer ? (
+              <button
+                onClick={() =>
+                  window.open(
+                    `${networkInfo.explorer}/tx/${data}`,
+                    "_blank",
+                    "noopener,noreferrer"
+                  )
+                }
+                style={{
+                  padding: "6px 12px",
+                  backgroundColor: "#ff6b35",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  fontWeight: "500",
+                }}
+              >
+                View {formatTxHash(data)} ↗
+              </button>
+            ) : (
+              <code
+                style={{
+                  fontSize: "12px",
+                  wordBreak: "break-all",
+                  color: "#666",
+                }}
+              >
+                {formatTxHash(data)}
+              </code>
+            )
+          ) : (
+            <div
+              style={{ color: "#666", fontSize: "13px", fontStyle: "italic" }}
+            >
+              Loading explorer link...
+            </div>
+          )}
         </div>
       )}
 
-      <div style={{ color: "gray", fontSize: "12px", marginTop: "6px" }}>
+      <div
+        style={{
+          color: "var(--text-muted)",
+          fontSize: "13px",
+          marginTop: "10px",
+          padding: "8px 12px",
+          backgroundColor: "rgba(239, 68, 68, 0.1)",
+          borderRadius: "6px",
+          border: "1px solid rgba(239, 68, 68, 0.2)",
+          fontWeight: "400",
+          lineHeight: "1.4",
+        }}
+      >
         🔥 You can only burn your own tokens
       </div>
     </div>

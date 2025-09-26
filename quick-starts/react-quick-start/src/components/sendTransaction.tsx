@@ -26,16 +26,46 @@ export function SendTransaction() {
   const getNetworkInfo = () => {
     switch (chainId) {
       case 420420422: // Passet Hub
-        return { symbol: "PAS", decimals: 10, name: "Passet Hub" };
+        return {
+          symbol: "PAS",
+          decimals: 10,
+          name: "Passet Hub",
+          explorer: "https://blockscout-passet-hub.parity-testnet.parity.io"
+        };
       case 420420418: // Kusama Asset Hub
-        return { symbol: "KSM", decimals: 12, name: "Kusama Asset Hub" };
+        return {
+          symbol: "KSM",
+          decimals: 12,
+          name: "Kusama Asset Hub",
+          explorer: "https://blockscout-kusama-asset-hub.parity-chains-scw.parity.io"
+        };
       case 420420421: // Westend
-        return { symbol: "WND", decimals: 12, name: "Westend Network" };
+        return {
+          symbol: "WND",
+          decimals: 12,
+          name: "Westend Network",
+          explorer: "https://blockscout-asset-hub.parity-chains-scw.parity.io"
+        };
       case 1: // Mainnet
-        return { symbol: "ETH", decimals: 18, name: "Ethereum Mainnet" };
+        return {
+          symbol: "ETH",
+          decimals: 18,
+          name: "Ethereum Mainnet",
+          explorer: "https://etherscan.io"
+        };
       default:
-        return { symbol: "ETH", decimals: 18, name: "Unknown Network" };
+        return {
+          symbol: "ETH",
+          decimals: 18,
+          name: "Unknown Network",
+          explorer: ""
+        };
     }
+  };
+
+  // Format transaction hash for display (first 5 chars only)
+  const formatTxHash = (hash: string) => {
+    return hash.slice(0, 5);
   };
 
   const networkInfo = getNetworkInfo();
@@ -129,39 +159,55 @@ export function SendTransaction() {
         Network: {networkInfo.name} | Currency: {networkInfo.symbol} | Decimals:{" "}
         {balanceData?.decimals ?? networkInfo.decimals}
       </p>
-      <form onSubmit={submit}>
-        <input
-          name="address"
-          placeholder="Recipient Address (0x...)"
-          required
-          style={{ width: "300px", marginBottom: "10px", padding: "8px" }}
-        />
-        <br />
-        <input
-          name="value"
-          placeholder={`Amount (${networkInfo.symbol})`}
-          type="number"
-          step={inputStep}
-          min="0"
-          required
-          style={{ width: "200px", marginBottom: "10px", padding: "8px" }}
-        />
-        <br />
-        <button
-          disabled={isPending}
-          type="submit"
-          style={{
-            padding: "10px 20px",
-            backgroundColor: isPending ? "#ccc" : "#0070f3",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: isPending ? "not-allowed" : "pointer",
-          }}
-        >
-          {isPending ? "Confirming..." : `Send ${networkInfo.symbol}`}
-        </button>
-      </form>
+
+      {/* Commented out ETH transactions - code preserved for future use */}
+      {chainId === 1 ? (
+        <div style={{
+          padding: "20px",
+          backgroundColor: "#fff3cd",
+          border: "1px solid #ffeaa7",
+          borderRadius: "5px",
+          color: "#856404",
+          textAlign: "center"
+        }}>
+          <p><strong>ETH transactions are temporarily disabled.</strong></p>
+          <p>Switch to Asset Hub networks to test transaction functionality.</p>
+        </div>
+      ) : (
+        <form onSubmit={submit}>
+          <input
+            name="address"
+            placeholder="Recipient Address (0x...)"
+            required
+            style={{ width: "300px", marginBottom: "10px", padding: "8px" }}
+          />
+          <br />
+          <input
+            name="value"
+            placeholder={`Amount (${networkInfo.symbol})`}
+            type="number"
+            step={inputStep}
+            min="0"
+            required
+            style={{ width: "200px", marginBottom: "10px", padding: "8px" }}
+          />
+          <br />
+          <button
+            disabled={isPending}
+            type="submit"
+            style={{
+              padding: "10px 20px",
+              backgroundColor: isPending ? "#ccc" : "#0070f3",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: isPending ? "not-allowed" : "pointer",
+            }}
+          >
+            {isPending ? "Confirming..." : `Send ${networkInfo.symbol}`}
+          </button>
+        </form>
+      )}
 
       {hash && (
         <div
@@ -172,11 +218,32 @@ export function SendTransaction() {
             borderRadius: "5px",
           }}
         >
-          <strong>Transaction Hash:</strong>
+          <strong>Transaction Submitted:</strong>
           <br />
-          <code style={{ fontSize: "12px", wordBreak: "break-all" }}>
-            {hash}
-          </code>
+          {networkInfo.explorer ? (
+            <button
+              onClick={() => window.open(`${networkInfo.explorer}/tx/${hash}`, '_blank', 'noopener,noreferrer')}
+              style={{
+                marginTop: "8px",
+                padding: "8px 12px",
+                backgroundColor: "#0070f3",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontSize: "14px",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px"
+              }}
+            >
+              View {formatTxHash(hash)} ↗
+            </button>
+          ) : (
+            <code style={{ fontSize: "12px", wordBreak: "break-all", display: "block", marginTop: "8px" }}>
+              {formatTxHash(hash)}
+            </code>
+          )}
         </div>
       )}
 

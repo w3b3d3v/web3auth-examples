@@ -14,8 +14,10 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "types": ["vitest/globals"]
   },
   "include": ["src", "src/components/sendTransaction.tsx", "src/components/switchNetwork.tsx", "src/components/writeContract.tsx", "src/components/getBalance.tsx"],
+  "exclude": ["src/**/*.test.*", "src/**/*.spec.*", "src/test/**/*"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
