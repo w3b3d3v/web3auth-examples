@@ -88,7 +88,7 @@ export function ContractData(params: {
     tokenName;
 
   return (
-    <>
+    <div data-testid="contract-data">
       <p>
         Smart contract address:{" "}
         <span className="font-bold">{params.contractAddress}</span>
@@ -154,6 +154,6 @@ export function ContractData(params: {
       }}>
         ✅ Anyone can mint this test token! No special permissions required.
       </div>
-    </>
+    </div>
   );
 }

@@ -3,6 +3,7 @@ import {
   useWeb3AuthConnect,
   useWeb3AuthDisconnect,
   useWeb3AuthUser,
+  useWeb3Auth,
 } from "@web3auth/modal/react";
 import { useAccount, useChainId } from "wagmi";
 import { SendTransaction } from "./components/sendTransaction";
@@ -12,6 +13,7 @@ import { ExportPrivateKey } from "./components/exportPrivateKey";
 import { ContractData } from "./components/ContractData";
 import { myTokenModuleMyTokenAddress } from "./generated";
 import { passetHub, kusamaAssetHub, westend } from "./wagmi-config";
+import { useState, useEffect } from "react";
 
 function App() {
   const {
@@ -27,12 +29,79 @@ function App() {
     error: disconnectError,
   } = useWeb3AuthDisconnect();
   const { userInfo } = useWeb3AuthUser();
+  const { web3Auth } = useWeb3Auth();
   const { address } = useAccount();
   const chainId = useChainId();
 
+  // Provider readiness states
+  const [providerReady, setProviderReady] = useState(false);
+  const [providerLoading, setProviderLoading] = useState(true);
+  const [providerError, setProviderError] = useState(false);
+
+  // Track Web3Auth provider initialization
+  useEffect(() => {
+    const checkProviderStatus = () => {
+      if (web3Auth) {
+        try {
+          // Check if Web3Auth is properly initialized and ready for login
+          // Web3Auth is ready if status is 'ready'
+          const isInitialized = web3Auth.status === "ready";
+          const isNotConnecting = !connectLoading;
+          const canLogin = isInitialized && isNotConnecting;
+
+          setProviderReady(canLogin);
+          setProviderLoading(web3Auth.status !== "ready");
+
+          // console.log('Web3Auth status:', web3Auth.status, 'connectLoading:', connectLoading, 'canLogin:', canLogin);
+
+          // If ready, clear the interval
+          if (canLogin) {
+            return true; // Signal to stop interval
+          }
+        } catch (error) {
+          console.error("Error checking Web3Auth status:", error);
+          setProviderReady(false);
+          setProviderLoading(true);
+        }
+      } else {
+        // Still loading if web3Auth instance not available
+        setProviderReady(false);
+        setProviderLoading(true);
+      }
+      return false; // Continue interval
+    };
+
+    // Check immediately
+    if (checkProviderStatus()) {
+      return; // Already ready, no need for interval
+    }
+
+    // Set up interval to continuously check until ready
+    const interval = setInterval(() => {
+      if (checkProviderStatus()) {
+        clearInterval(interval);
+      }
+    }, 200); // Check more frequently
+
+    // Cleanup interval after 30 seconds max
+    const timeout = setTimeout(() => {
+      clearInterval(interval);
+      console.warn("Web3Auth initialization timeout");
+      setProviderLoading(false);
+      setProviderError(true);
+      setProviderReady(false);
+    }, 30000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [web3Auth, connectLoading]);
+
+
   const contractAddress =
     myTokenModuleMyTokenAddress[
-      420420422 as keyof typeof myTokenModuleMyTokenAddress
+      passetHub.id as keyof typeof myTokenModuleMyTokenAddress
     ];
 
   // Faucet URLs for different networks
@@ -173,9 +242,44 @@ function App() {
           started.
         </p>
       </div>
-      <button onClick={() => connect()} className="card">
-        Login
-      </button>
+
+      {/* Provider initialization status */}
+      {providerLoading && (
+        <div className="loading">Initializing Web3Auth provider...</div>
+      )}
+
+      {/* Login button - only show when provider is ready */}
+      {!providerLoading && providerReady && (
+        <button
+          onClick={() => {
+            // Since the button only appears when ready, we should always be able to connect
+            if (web3Auth && web3Auth.status === "ready" && !connectLoading && !isConnected) {
+              connect();
+            }
+          }}
+          className="card"
+          disabled={!providerReady || connectLoading || isConnected}
+        >
+          Login
+        </button>
+      )}
+
+      {/* Provider failed to initialize */}
+      {!providerLoading && !providerReady && providerError && !connectLoading && (
+        <div className="error">
+          Web3Auth provider failed to initialize after 30 seconds. Please check
+          your internet connection and reload the page.
+        </div>
+      )}
+
+      {/* Provider ready but can't connect (network issues) */}
+      {!providerLoading && !providerReady && !providerError && !connectLoading && (
+        <div className="error">
+          Web3Auth provider is not ready for login. Please wait or reload the
+          page.
+        </div>
+      )}
+
       {connectLoading && <div className="loading">Connecting...</div>}
       {connectError && <div className="error">{connectError.message}</div>}
     </div>

@@ -1,11 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { useWeb3AuthConnect, useWeb3AuthDisconnect, useWeb3AuthUser } from '@web3auth/modal/react';
 import { useAccount, useChainId } from 'wagmi';
 import App from '../App';
 
 // Mock window.open
 Object.assign(window, { open: vi.fn() });
+
+// Mock setTimeout for provider initialization
+vi.stubGlobal('setTimeout', (callback: () => void, delay: number) => {
+  // Immediately call callback in tests
+  callback();
+  return 1;
+});
 
 describe('App Component', () => {
   beforeEach(() => {
@@ -26,18 +33,38 @@ describe('App Component', () => {
       } as any);
     });
 
-    it('displays educational messaging when not logged in', () => {
+    it('displays educational messaging when not logged in', async () => {
       render(<App />);
 
       expect(screen.getByText(/Connect with your social accounts to explore Web3 without wallet extensions/)).toBeInTheDocument();
       expect(screen.getByText(/no MetaMask or browser wallet required/)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
+
+      // Wait for provider to initialize and login button to appear
+      await waitFor(
+        () => {
+          expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
+        },
+        { timeout: 100 } // Short timeout for tests
+      );
     });
 
     it('shows "no wallet extension needed" messaging', () => {
       render(<App />);
 
       expect(screen.getByText(/no MetaMask or browser wallet required/)).toBeInTheDocument();
+    });
+
+    it('shows provider loading state before login button', () => {
+      // Mock setTimeout to not execute immediately
+      vi.stubGlobal('setTimeout', vi.fn());
+
+      render(<App />);
+
+      // Should show loading message initially
+      expect(screen.getByText(/Initializing Web3Auth provider/)).toBeInTheDocument();
+
+      // Login button should not be present during loading
+      expect(screen.queryByRole('button', { name: /login/i })).not.toBeInTheDocument();
     });
   });
 
@@ -71,7 +98,8 @@ describe('App Component', () => {
 
       expect(screen.getByText(/Interact directly with Polkadot Asset Hub - no MetaMask required/)).toBeInTheDocument();
       expect(screen.getByText(/Check Your Balance/)).toBeInTheDocument();
-      expect(screen.getByText(/Send Transactions/)).toBeInTheDocument();
+      // Send Transactions section is commented out in the component
+      // expect(screen.getByText(/Send Transactions/)).toBeInTheDocument();
       expect(screen.getByText(/Smart Contract Interactions/)).toBeInTheDocument();
       expect(screen.getByText(/Network Switching/)).toBeInTheDocument();
       expect(screen.getByText(/Private Key Access/)).toBeInTheDocument();
@@ -104,7 +132,8 @@ describe('App Component', () => {
 
       // Check that all sections are present
       expect(screen.getByTestId('balance')).toBeInTheDocument();
-      expect(screen.getByTestId('send-transaction')).toBeInTheDocument();
+      // Send transaction is commented out in the component
+      // expect(screen.getByTestId('send-transaction')).toBeInTheDocument();
       expect(screen.getByTestId('contract-data')).toBeInTheDocument();
       expect(screen.getByTestId('switch-chain')).toBeInTheDocument();
       expect(screen.getByTestId('export-private-key')).toBeInTheDocument();
@@ -129,11 +158,17 @@ describe('App Component', () => {
       expect(educationalMessage.closest('.educational-message')).toBeInTheDocument();
     });
 
-    it('renders login button with touch-friendly size', () => {
+    it('renders login button with touch-friendly size', async () => {
       render(<App />);
 
-      const loginButton = screen.getByRole('button', { name: /login/i });
-      expect(loginButton).toHaveClass('card');
+      // Wait for provider to initialize and login button to appear
+      await waitFor(
+        () => {
+          const loginButton = screen.getByRole('button', { name: /login/i });
+          expect(loginButton).toHaveClass('card');
+        },
+        { timeout: 100 } // Short timeout for tests
+      );
     });
   });
 

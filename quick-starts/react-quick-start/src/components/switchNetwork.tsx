@@ -10,7 +10,7 @@ export function SwitchChain() {
   }
 
   return (
-    <div>
+    <div data-testid="switch-chain">
       <h2>Switch Network</h2>
       <h3>Current: {getCurrentChainName()}</h3>
       <p>Available Asset Hub Networks:</p>

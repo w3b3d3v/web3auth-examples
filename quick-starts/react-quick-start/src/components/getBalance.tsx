@@ -50,7 +50,7 @@ export function Balance() {
   const networkDecimals = data?.decimals ?? networkInfo.decimals;
 
   return (
-    <div>
+    <div data-testid="balance">
       <h2>Balance</h2>
       <p style={{ fontSize: "14px", color: "#666", marginBottom: "10px" }}>
         Network: {networkInfo.name} | Currency: {networkInfo.symbol} | Decimals: {networkDecimals}

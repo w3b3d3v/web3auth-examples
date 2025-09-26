@@ -102,7 +102,7 @@ ${privateKeyHex}`);
 
 
   return (
-    <div>
+    <div data-testid="export-private-key">
       <h2>Export Private Key</h2>
       <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: '10px' }}>
         Network: {networkInfo.name} | Type: {networkInfo.type}
