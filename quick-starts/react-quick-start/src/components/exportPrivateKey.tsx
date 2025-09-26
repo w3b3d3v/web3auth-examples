@@ -3,10 +3,8 @@ import { useWeb3Auth } from "@web3auth/modal/react";
 import { useChainId } from "wagmi";
 
 export function ExportPrivateKey() {
-  const [privateKey, setPrivateKey] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
-  const [copied, setCopied] = useState(false);
   const { web3Auth } = useWeb3Auth();
   const chainId = useChainId();
 
@@ -48,8 +46,6 @@ export function ExportPrivateKey() {
 
     setLoading(true);
     setError("");
-    setPrivateKey("");
-    setCopied(false);
 
     try {
       const method = getPrivateKeyMethod();
@@ -60,7 +56,39 @@ export function ExportPrivateKey() {
       });
 
       if (privateKeyHex) {
-        setPrivateKey(privateKeyHex as string);
+        // First, show educational message about MPC vs MetaMask
+        const educationalMessage = `💡 Web3Auth Advantage: Unlike MetaMask which stores your key locally, Web3Auth uses MultiPartyComputation (MPC) technology. Your key is never fully assembled in one place - providing superior security without browser extensions!
+
+No MetaMask needed ✨
+
+Learn more about MPC: https://web3auth.io/docs/features/mpc
+
+Click OK to view your private key.`;
+
+        const userConfirmed = window.confirm(educationalMessage);
+
+        if (userConfirmed) {
+          // Then show the private key with copy option
+          const privateKeyMessage = `🔐 Your Private Key:
+
+${privateKeyHex}
+
+Click OK to copy to clipboard, or Cancel to close without copying.`;
+
+          const shouldCopy = window.confirm(privateKeyMessage);
+
+          if (shouldCopy) {
+            try {
+              await navigator.clipboard.writeText(privateKeyHex as string);
+              window.alert('✅ Private key copied to clipboard!');
+            } catch (err) {
+              console.error('Failed to copy to clipboard:', err);
+              window.alert(`❌ Failed to copy automatically. Please copy manually:
+
+${privateKeyHex}`);
+            }
+          }
+        }
       } else {
         setError("Failed to retrieve private key");
       }
@@ -72,23 +100,6 @@ export function ExportPrivateKey() {
     }
   };
 
-  const copyToClipboard = async () => {
-    if (privateKey) {
-      try {
-        await navigator.clipboard.writeText(privateKey);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      } catch (err) {
-        console.error("Failed to copy to clipboard:", err);
-      }
-    }
-  };
-
-  const clearPrivateKey = () => {
-    setPrivateKey("");
-    setError("");
-    setCopied(false);
-  };
 
   return (
     <div>
@@ -110,28 +121,11 @@ export function ExportPrivateKey() {
             color: 'white',
             border: 'none',
             borderRadius: 'var(--radius)',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            marginRight: '10px'
+            cursor: loading ? 'not-allowed' : 'pointer'
           }}
         >
           {loading ? 'Exporting...' : 'Export Private Key'}
         </button>
-
-        {privateKey && (
-          <button
-            onClick={clearPrivateKey}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: 'var(--text-muted)',
-              color: 'white',
-              border: 'none',
-              borderRadius: 'var(--radius)',
-              cursor: 'pointer'
-            }}
-          >
-            Clear
-          </button>
-        )}
       </div>
 
       {error && (
@@ -145,46 +139,6 @@ export function ExportPrivateKey() {
           border: '1px solid #722020'
         }}>
           <strong>Error:</strong> {error}
-        </div>
-      )}
-
-      {privateKey && (
-        <div style={{
-          marginTop: '15px',
-          padding: '15px',
-          backgroundColor: 'var(--bg-light)',
-          borderRadius: 'var(--radius)',
-          border: '2px solid #ff6b35'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-            <strong style={{ color: 'var(--text-color)' }}>Private Key:</strong>
-            <button
-              onClick={copyToClipboard}
-              style={{
-                padding: '5px 10px',
-                backgroundColor: copied ? '#00cc00' : 'var(--primary-color)',
-                color: 'white',
-                border: 'none',
-                borderRadius: 'var(--radius)',
-                cursor: 'pointer',
-                fontSize: '12px'
-              }}
-            >
-              {copied ? '✓ Copied!' : 'Copy'}
-            </button>
-          </div>
-          <code style={{
-            fontSize: '12px',
-            wordBreak: 'break-all',
-            display: 'block',
-            padding: '8px',
-            backgroundColor: 'var(--bg-color)',
-            border: '1px solid var(--border-color)',
-            borderRadius: 'var(--radius)',
-            color: 'var(--text-color)'
-          }}>
-            {privateKey}
-          </code>
         </div>
       )}
     </div>
