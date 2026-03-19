@@ -3,7 +3,7 @@ import { useWeb3AuthConnect, useWeb3AuthDisconnect } from "@web3auth/modal/react
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import UserProfile from "../components/UserProfile";
+import UserProfile from "./UserProfile";
 import { usePlayground } from "../services/playground";
 
 interface DrawerProps {

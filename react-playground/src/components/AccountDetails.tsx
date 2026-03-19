@@ -2,7 +2,7 @@ import { CustomChainConfig, WALLET_CONNECTORS } from "@web3auth/modal";
 import { useWeb3AuthConnect, useWeb3AuthUser } from "@web3auth/modal/react";
 import React, { JSX, useEffect, useState } from "react";
 
-import Dropdown from "../components/DropDown";
+import Dropdown from "./DropDown";
 import { usePlayground } from "../services/playground";
 
 interface AccountDetailsProps {
